@@ -89,9 +89,12 @@ namespace Automata
 
 	public class ExtrudedAutomata : MonoBehaviour
 	{
+		public enum Placement { Noise, Random }
+
 		[Header ("Initialization")]
 		public int Width = 50;
 		public int Height = 50;
+		public Placement PlacementMode = ExtrudedAutomata.Placement.Noise;
 		public float Frequency = 1f;
 		[Range (0f, 1f)]
 		public float Minimum = 0.5f;
@@ -102,9 +105,13 @@ namespace Automata
 		public int MinNeighbors = 2;
 		[Range (0, 8)]
 		public int MaxNeighbors = 3;
+		[Range (1, 50)]
+		public int MaxFrames = 20;
+		public bool Scroll = true;
 		public Vector3 Spacing = Vector3.one;
 		public Mesh Mesh;
-		public Material Material;
+		public Material TopMaterial;
+		public Material BodyMaterial;
 
 		private List<Frame> frames;
 		private Coroutine generateFramesRoutine;
@@ -117,7 +124,8 @@ namespace Automata
 
 		private void OnDisable ()
 		{
-			StopCoroutine (generateFramesRoutine);
+			if (generateFramesRoutine != null)
+				StopCoroutine (generateFramesRoutine);
 			frames = new List<Frame> ();
 		}
 
@@ -133,8 +141,11 @@ namespace Automata
 			{
 				for (int y = 0; y < Height; y++)
 				{
-					var noise = Mathf.PerlinNoise (x * Frequency + offset, y * Frequency);
-					firstFrame.grid[x, y] = noise > Minimum;
+					var value = 0f;
+					if (PlacementMode == Placement.Noise) value = Mathf.PerlinNoise (x * Frequency + offset, y * Frequency);
+					else value = Random.value;
+
+					firstFrame.grid[x, y] = value > Minimum;
 				}
 			}
 
@@ -145,6 +156,20 @@ namespace Automata
 		{
 			while (true)
 			{
+				if (frames.Count > MaxFrames)
+				{
+					if (Scroll)
+					{
+						while (frames.Count > MaxFrames)
+							frames.RemoveAt (0);
+					}
+					else
+					{
+						yield return null;
+						continue;
+					}
+				}
+
 				//frames[0] = new Frame (frames[frames.Count - 1]);
 				var newFrame = new Frame (frames[frames.Count - 1], MinNeighbors, MaxNeighbors);
 
@@ -156,6 +181,7 @@ namespace Automata
 
 				frames.Add (newFrame);
 
+
 				yield return new WaitForSeconds (Delay);
 			}
 		}
@@ -166,6 +192,7 @@ namespace Automata
 
 			for (int i = 0; i < frames.Count; i++)
 			{
+				var material = i == frames.Count - 1 ? TopMaterial : BodyMaterial;
 				for (int x = 0; x < frames[i].width; x++)
 				{
 					for (int y = 0; y < frames[i].height; y++)
@@ -173,7 +200,7 @@ namespace Automata
 						if (frames[i].grid[x, y] == true)
 						{
 							var matrix = transformMatrix * Matrix4x4.Translate (new Vector3 (x * Spacing.x, i * Spacing.y, y * Spacing.z));
-							Graphics.DrawMesh (Mesh, matrix, Material, 0);
+							Graphics.DrawMesh (Mesh, matrix, material, 0);
 						}
 					}
 				}
