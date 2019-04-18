@@ -19,7 +19,7 @@ namespace Automata
 			grid = new bool[width, height];
 		}
 
-		public Frame (Frame previous, int minKill, int maxKill, int create)
+		public Frame (Frame previous)
 		{
 			if (previous == null)
 				throw new System.NullReferenceException ("Previous frame cannot be null.");
@@ -36,11 +36,12 @@ namespace Automata
 				for (int y = 1; y < height - 1; y++)
 				{
 					var count = GetNeighborCount (previous, x, y);
-					var value = false;
-					if (grid[x, y])
-						value = !(count <= minKill || count >= maxKill);
+					bool value;
+					if (previous.grid[x, y])
+						value = !(count < 2 || count > 3);
 					else
-						value = count == create;
+						value = count == 3;
+
 					if (value)
 						empty = false;
 
@@ -55,31 +56,17 @@ namespace Automata
 
 			var grid = frame.grid;
 
-			var xPlus = (x + 1) % frame.width;
-			var xMinus = x - 1;
-			if (xMinus < 0)
-				xMinus = frame.width;
-			var yPlus = (y + 1) % frame.height;
-			var yMinus = y - 1;
-			if (yMinus < 0)
-				yMinus = frame.height;
+			for (int i = -1; i <= 1; i++)
+			{
+				for (int j = -1; j <= 1; j++)
+				{
+					if (grid[x + i, y + j])
+						count++;
+				}
+			}
 
-			if (grid[xPlus, y] == true)
-				count++;
-			if (grid[xMinus, y] == true)
-				count++;
-			if (grid[x, yPlus] == true)
-				count++;
-			if (grid[x, yMinus] == true)
-				count++;
-			if (grid[xPlus, yPlus] == true)
-				count++;
-			if (grid[xMinus, yMinus] == true)
-				count++;
-			if (grid[xMinus, yPlus] == true)
-				count++;
-			if (grid[xPlus, yMinus] == true)
-				count++;
+			if (grid[x, y])
+				count--;
 
 			return count;
 		}
@@ -99,12 +86,6 @@ namespace Automata
 
 		[Header ("Animation")]
 		public float Delay = 0.5f;
-		[Range (0, 8)]
-		public int MinToKill = 2;
-		[Range (0, 8)]
-		public int MaxToKill = 4;
-		[Range (0, 8)]
-		public int AmountToCreate = 3;
 		[Range (1, 50)]
 		public int MaxFrames = 20;
 		public bool Scroll = true;
@@ -189,7 +170,7 @@ namespace Automata
 				}
 
 				//frames[0] = new Frame (frames[frames.Count - 1]);
-				var newFrame = new Frame (frames[frames.Count - 1], MinToKill, MaxToKill, AmountToCreate);
+				var newFrame = new Frame (frames[frames.Count - 1]);
 
 				if (newFrame.empty)
 				{
