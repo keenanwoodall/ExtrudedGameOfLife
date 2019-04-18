@@ -3,7 +3,10 @@ guid: ef7542d50fa7ffa4ca2b11ebbc0ba80e
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  - TopMaterial: {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - BodyMaterial: {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

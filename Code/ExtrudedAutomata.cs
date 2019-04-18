@@ -77,17 +77,17 @@ namespace Automata
 		public enum Placement { Noise, Random, Glider }
 
 		[Header ("Initialization")]
-		public int Width = 50;
-		public int Height = 50;
+		public int Width = 25;
+		public int Height = 25;
 		public Placement PlacementMode = ExtrudedAutomata.Placement.Noise;
-		public float Frequency = 1f;
+		public float Frequency = 0.5f;
 		[Range (0f, 1f)]
 		public float Minimum = 0.5f;
 
 		[Header ("Animation")]
-		public float Delay = 0.5f;
+		public float Delay = 0.05f;
 		[Range (1, 50)]
-		public int MaxFrames = 20;
+		public int MaxFrames = 25;
 		public bool Scroll = true;
 		public Vector3 Spacing = Vector3.one;
 		public Mesh Mesh;
