@@ -74,7 +74,7 @@ namespace Automata
 
 	public class ExtrudedAutomata : MonoBehaviour
 	{
-		public enum Placement { Noise, Random, Glider }
+		public enum Placement { Noise, Random, Glider, LightweightSpaceship }
 
 		[Header ("Initialization")]
 		public int Width = 25;
@@ -134,14 +134,24 @@ namespace Automata
 							break;
 
 						case Placement.Glider:
-							var xo = Width / 2;
-							var yo = Height / 2;
 							firstFrame.grid[x, y] = 
-								(x == 1 + xo && y == 1 + yo) ||
-								(x == 2 + xo && y == 1 + yo) ||
-								(x == 3 + xo && y == 1 + yo) ||
-								(x == 3 + xo && y == 2 + yo) ||
-								(x == 2 + xo && y == 3 + yo);
+								(x == 1 && y == 1 + Height - 5) ||
+								(x == 2 && y == 1 + Height - 5) ||
+								(x == 3 && y == 1 + Height - 5) ||
+								(x == 3 && y == 2 + Height - 5) ||
+								(x == 2 && y == 3 + Height - 5);
+							break;
+						case Placement.LightweightSpaceship:
+							firstFrame.grid[x, y] =
+								(x == 1 && y == 1 + Height / 2) ||
+								(x == 4 && y == 1 + Height / 2) ||
+								(x == 5 && y == 2 + Height / 2) ||
+								(x == 5 && y == 3 + Height / 2) ||
+								(x == 5 && y == 4 + Height / 2) ||
+								(x == 1 && y == 3 + Height / 2) ||
+								(x == 2 && y == 4 + Height / 2) ||
+								(x == 3 && y == 4 + Height / 2) ||
+								(x == 4 && y == 4 + Height / 2);
 							break;
 					}
 
