@@ -72,14 +72,14 @@ namespace Automata
 		}
 	}
 
-	public class ExtrudedAutomata : MonoBehaviour
+	public class ExtrudedGameOfLife : MonoBehaviour
 	{
 		public enum Placement { Noise, Random, Glider, LightweightSpaceship }
 
 		[Header ("Initialization")]
 		public int Width = 25;
 		public int Height = 25;
-		public Placement PlacementMode = ExtrudedAutomata.Placement.Noise;
+		public Placement PlacementMode = ExtrudedGameOfLife.Placement.Noise;
 		public float Frequency = 0.5f;
 		[Range (0f, 1f)]
 		public float Minimum = 0.5f;
