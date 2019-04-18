@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Automata
@@ -20,7 +19,7 @@ namespace Automata
 			grid = new bool[width, height];
 		}
 
-		public Frame (Frame previous, int min, int max)
+		public Frame (Frame previous, int minKill, int maxKill, int create)
 		{
 			if (previous == null)
 				throw new System.NullReferenceException ("Previous frame cannot be null.");
@@ -32,7 +31,6 @@ namespace Automata
 
 			grid = new bool[width, height];
 
-
 			for (int x = 1; x < width - 1; x++)
 			{
 				for (int y = 1; y < height - 1; y++)
@@ -40,9 +38,9 @@ namespace Automata
 					var count = GetNeighborCount (previous, x, y);
 					var value = false;
 					if (grid[x, y])
-						value = count >= min && count <= max;
+						value = !(count <= minKill || count >= maxKill);
 					else
-						value = count == max;
+						value = count == create;
 					if (value)
 						empty = false;
 
@@ -89,7 +87,7 @@ namespace Automata
 
 	public class ExtrudedAutomata : MonoBehaviour
 	{
-		public enum Placement { Noise, Random }
+		public enum Placement { Noise, Random, Glider }
 
 		[Header ("Initialization")]
 		public int Width = 50;
@@ -102,9 +100,11 @@ namespace Automata
 		[Header ("Animation")]
 		public float Delay = 0.5f;
 		[Range (0, 8)]
-		public int MinNeighbors = 2;
+		public int MinToKill = 2;
 		[Range (0, 8)]
-		public int MaxNeighbors = 3;
+		public int MaxToKill = 4;
+		[Range (0, 8)]
+		public int AmountToCreate = 3;
 		[Range (1, 50)]
 		public int MaxFrames = 20;
 		public bool Scroll = true;
@@ -141,11 +141,29 @@ namespace Automata
 			{
 				for (int y = 0; y < Height; y++)
 				{
-					var value = 0f;
-					if (PlacementMode == Placement.Noise) value = Mathf.PerlinNoise (x * Frequency + offset, y * Frequency);
-					else value = Random.value;
+					switch (PlacementMode)
+					{
+						default:
+						case Placement.Noise:
+							firstFrame.grid[x, y] = Mathf.PerlinNoise (x * Frequency + offset, y * Frequency) > 0.5f;
+							break;
 
-					firstFrame.grid[x, y] = value > Minimum;
+						case Placement.Random:
+							firstFrame.grid[x, y] = Random.value > 0.5f;
+							break;
+
+						case Placement.Glider:
+							var xo = Width / 2;
+							var yo = Height / 2;
+							firstFrame.grid[x, y] = 
+								(x == 1 + xo && y == 1 + yo) ||
+								(x == 2 + xo && y == 1 + yo) ||
+								(x == 3 + xo && y == 1 + yo) ||
+								(x == 3 + xo && y == 2 + yo) ||
+								(x == 2 + xo && y == 3 + yo);
+							break;
+					}
+
 				}
 			}
 
@@ -171,11 +189,12 @@ namespace Automata
 				}
 
 				//frames[0] = new Frame (frames[frames.Count - 1]);
-				var newFrame = new Frame (frames[frames.Count - 1], MinNeighbors, MaxNeighbors);
+				var newFrame = new Frame (frames[frames.Count - 1], MinToKill, MaxToKill, AmountToCreate);
 
 				if (newFrame.empty)
 				{
-					StopCoroutine (generateFramesRoutine);
+					if (generateFramesRoutine != null)
+						StopCoroutine (generateFramesRoutine);
 					yield break;
 				}
 
